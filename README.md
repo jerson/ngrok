@@ -1,95 +1,58 @@
 # pgrok - Introspected tunnels to localhost
 
-### ”I want to expose a local server behind a NAT or firewall to the internet.”
+This is a fork of pgrok with the intention of it being used within the RESWARM application ecosystem.
 
-**ejemplo.me** service is shuting down, please take a look, https://github.com/jerson/pgrok/issues/20
-
-# Install client
-
-Install supports **Linux** and **MacOS** with **homebrew**
-
-```bash
-brew install jerson/tap/pgrok
 ```
-# Usage
+pgrok -help                                                     
+Usage: pgrok [OPTIONS] <local port or address>
+Options:
+  -authtoken string
+    	Authentication token for identifying an pgrok account
+  -config string
+    	Path to pgrok configuration file. (default: $HOME/.pgrok)
+  -hostname string
+    	Request a custom hostname from the pgrok server. (HTTP only) (requires CNAME of your DNS)
+  -httpauth string
+    	username:password HTTP basic auth creds protecting the public tunnel endpoint
+  -inspectaddr string
+    	The addr for inspect requests (default "127.0.0.1:4040")
+  -inspectpublic
+    	Should export inspector to public access
+  -log string
+    	Write log messages to this file. 'stdout' and 'none' have special meanings (default "none")
+  -log-level string
+    	The level of messages to log. One of: DEBUG, INFO, WARNING, ERROR (default "DEBUG")
+  -proto string
+    	The protocol of the traffic over the tunnel (http+https|https|tcp) (default "http+https")
+  -serveraddr string
+    	The addr for server
+  -subdomain string
+    	Request a custom subdomain from the pgrok server. (HTTP only)
+  -tls
+    	Use dial for tls port
+  -tlsClientCrt string
+    	Path to a TLS Client CRT file if server requires
+  -tlsClientKey string
+    	Path to a TLS Client Key file if server requires
 
-```bash
-pgrok -subdomain=customsubdomain 3000
+Examples:
+	pgrok 80
+	pgrok -subdomain=example 8080
+	pgrok -proto=tcp 22
+	pgrok -hostname="example.com" -httpauth="user:password" 10.0.0.1
+
+
+Advanced usage: pgrok [OPTIONS] <command> [command args] [...]
+Commands:
+	pgrok start [tunnel] [...]    Start tunnels by name from config file
+	ngork start-all               Start all tunnels defined in config file
+	pgrok list                    List tunnel names from config file
+	pgrok help                    Print help
+	pgrok version                 Print pgrok version
+
+Examples:
+	pgrok start www api blog pubsub
+	pgrok -log=stdout -config=pgrok.yml start ssh
+	pgrok start-all
+	pgrok version
 ```
-sample output
-
-```bash
-pgrok                                                           (Ctrl+C to quit)
-                                                                                
-Tunnel Status                 online                                            
-Version                       3.0/3.0                                           
-Forwarding                    http://customsubdomain.ejemplo.me -> 127.0.0.1:3000            
-Forwarding                    https://customsubdomain.ejemplo.me -> 127.0.0.1:3000           
-Web Interface                 http://127.0.0.1:4040                             
-# Conn                        0                                                 
-Avg Conn Time                 0.00ms 
-```
-
-# Downloads
-
-just download in [Release section](https://github.com/jerson/pgrok/releases)
-
-# Install server
-
-Install supports **Linux** and **MacOS** with **homebrew**
-
-```bash
-brew install jerson/tap/pgrokd
-```
-
-or you can just download it from download section
-
-# Install server with Docker
-
-pgrok and pgrokd available in [Docker Hub](https://hub.docker.com/r/jerson/pgrok)
-
-Sample server in docker-compose
-
-```yaml
-version: "3.7"
-
-services:
-  pgrokd:
-    image: jerson/pgrok
-    entrypoint: pgrokd
-    command: -domain ejemplo.me -httpAddr=:80 -httpsAddr=:443 -tunnelAddr=:4443 -tlsCrt=/certs/tls.crt -tlsKey=/certs/tls.key
-    volumes:
-      - /home/certs:/certs
-    ports:
-      - 80:80
-      - 443:443
-      - 4443:4443
-```
-
-## What is pgrok?
-
-pgrok is a reverse proxy that creates a secure tunnel from a public endpoint to a locally running web service.
-pgrok captures and analyzes all traffic over the tunnel for later inspection and replay.
-
-## What can I do with pgrok?
-
-- Expose any http service behind a NAT or firewall to the internet on a subdomain of ejemplo.me
-- Expose any tcp service behind a NAT or firewall to the internet on a random port of ejemplo.me
-- Inspect all http requests/responses that are transmitted over the tunnel
-- Replay any request that was transmitted over the tunnel
-
-## What is pgrok useful for?
-
-- Temporarily sharing a website that is only running on your development machine
-- Demoing an app at a hackathon without deploying
-- Developing any services which consume webhooks (HTTP callbacks) by allowing you to replay those requests
-- Debugging and understanding any web service by inspecting the HTTP traffic
-- Running networked services on machines that are firewalled off from the internet
-
-## Developing on pgrok
-
-[pgrok developer's guide](docs/DEVELOPMENT.md)
-
-## Disclaimer
-
-pgrok is a fork of ngrok
