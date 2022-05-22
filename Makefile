@@ -14,9 +14,6 @@ compress:
 server: deps
 	go build -o pgrokd ./cmd/pgrokd
 
-fmt:
-	go fmt ./...
-
 client: deps
 	go build -o pgrok ./cmd/pgrok
 
@@ -56,15 +53,3 @@ build: assets client server
 clean:
 	go clean -i -r ./...
 	rm -rf client/assets/ server/assets/
-
-contributors:
-	echo "Contributors to pgrok, both large and small:\n" > CONTRIBUTORS
-	git log --raw | grep "^Author: " | sort | uniq | cut -d ' ' -f2- | sed 's/^/- /' | cut -d '<' -f1 >> CONTRIBUTORS
-
-registry: registry-build registry-push
-
-registry-build:
-	docker build --pull -t $(REGISTRY):$(APP_VERSION) .
-
-registry-push:
-	docker push $(REGISTRY):$(APP_VERSION)

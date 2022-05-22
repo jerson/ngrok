@@ -10,3 +10,4 @@ server/assets/
 /pgrokd.exe
 /build
 /dist
+.vscode
