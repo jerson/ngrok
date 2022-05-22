@@ -82,6 +82,11 @@ func NewControl(ctlConn conn.Conn, authMsg *msg.Auth) {
 		ctlConn.Close()
 	}
 
+	if opts.authToken != "" && authMsg.User != opts.authToken {
+		failAuth(fmt.Errorf("Unauthorized, token is invalid"))
+		return
+	}
+
 	// register the clientid
 	c.id = authMsg.ClientId
 	if c.id == "" {
