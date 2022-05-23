@@ -2,54 +2,19 @@ REGISTRY?=jerson/pgrok
 APP_VERSION?=latest
 .PHONY: default server client deps fmt clean all release-all assets client-assets server-assets contributors
 
-default: deps build
+build-all:
+	scripts/build-all.sh
 
-deps: 
-	go mod download
+build-all-docker: clean
+	docker build . -t pgrok-builder
+	docker run --name pgrok_builder -v ${PWD}/build:/app/pgrok/build pgrok-builder
 
-compress:
-	upx pgrokd
-	upx pgrok
+publish:
+	scripts/publish.sh
 
-server: deps
-	go build -o pgrokd ./cmd/pgrokd
-
-client: deps
-	go build -o pgrok ./cmd/pgrok
-
-compile-all:
-	GOOS=linux GOARCH=386 go build -o pgrok_linux_i386 ./cmd/pgrok
-	GOOS=windows GOARCH=386 go build -o pgrok_windows_i386 ./cmd/pgrok
-	GOOS=linux GOARCH=arm64 go build -o pgrok_linux_arm64 ./cmd/pgrok
-	GOOS=windows GOARCH=arm64 go build -o pgrok_windows_arm64 ./cmd/pgrok
-	GOOS=linux GOARCH=amd64 go build -o pgrok_linux_amd64 ./cmd/pgrok
-	GOOS=windows GOARCH=amd64 go build -o pgrok_windows_amd64 ./cmd/pgrok
-
-	GOOS=linux GOARCH=386 go build -o pgrokd_linux_i386 ./cmd/pgrokd
-	GOOS=windows GOARCH=386 go build -o pgrokd_windows_i386 ./cmd/pgrokd
-	GOOS=linux GOARCH=arm64 go build -o pgrokd_linux_arm64 ./cmd/pgrokd
-	GOOS=windows GOARCH=arm64 go build -o pgrokd_windows_arm64 ./cmd/pgrokd
-	GOOS=linux GOARCH=amd64 go build -o pgrokd_linux_amd64 ./cmd/pgrokd
-	GOOS=windows GOARCH=amd64 go build -o pgrokd_windows_amd64 ./cmd/pgrokd
-
-
-assets: client-assets server-assets
+publish-version:
+	gsutil cp "version.txt" gs://pgrok
+	gsutil setmeta -r -h "Cache-control:public, max-age=0" gs://pgrok/version.txt
 
 go-bindata:
 	go install github.com/jteeuwen/go-bindata/go-bindata
-
-client-assets: go-bindata
-	go-bindata -nomemcopy -pkg=assets -tags=$(BUILDTAGS) \
-		-o=client/assets/all.go \
-		assets/client/...
-
-server-assets: go-bindata
-	go-bindata -nomemcopy -pkg=assets -tags=$(BUILDTAGS) \
-		-o=server/assets/all.go \
-		assets/server/...
-
-build: assets client server
-
-clean:
-	go clean -i -r ./...
-	rm -rf client/assets/ server/assets/
