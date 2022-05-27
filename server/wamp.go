@@ -124,7 +124,7 @@ func EstablishSocketConnection() chan *client.Client {
 			var ctx context.Context
 			var cancelFunc context.CancelFunc
 
-			ctx, cancelFunc = context.WithTimeout(context.Background(), 1250)
+			ctx, cancelFunc = context.WithTimeout(context.Background(), 1250*time.Millisecond)
 
 			var duration time.Duration
 			requestStart := time.Now() // time request
