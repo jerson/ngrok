@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"pgrok/conn"
@@ -83,18 +84,24 @@ func NewControl(ctlConn conn.Conn, authMsg *msg.Auth) {
 		ctlConn.Close()
 	}
 
+	ctx := context.Background()
 	args := []interface{}{Dict{"device_key": authMsg.User, "device_secret": authMsg.Password}}
-	res, err := wampSession.Call(context.Background(), AuthenticateDeviceSecret, args, nil, nil, nil)
+	res, err := wampSession.Call(ctx, AuthenticateDeviceSecret, args, nil, nil, nil)
 	if err != nil {
 		failAuth(err)
 		return
 	}
 
-	fmt.Printf("%+v\n", res.Arguments)
-	// if opts.authToken != "" && authMsg.User != opts.authToken {
-	// 	failAuth(fmt.Errorf("Unauthorized, token is invalid"))
-	// 	return
-	// }
+	if len(res.Arguments) == 0 {
+		failAuth(errors.New("no args response from backend"))
+		return
+	}
+
+	validCredentials, ok := res.Arguments[0].(bool)
+	if !ok || !validCredentials {
+		failAuth(errors.New("invalid credentials"))
+		return
+	}
 
 	// register the clientid
 	c.id = authMsg.ClientId
