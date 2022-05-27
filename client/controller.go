@@ -183,7 +183,6 @@ func (ctl *Controller) Run(config *Configuration) {
 		}
 	}
 
-	ctl.Go(func() { autoUpdate(state, config.AuthToken) })
 	ctl.Go(ctl.model.Run)
 
 	updates := ctl.updates.Reg()

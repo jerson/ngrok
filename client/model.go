@@ -50,6 +50,8 @@ type ClientModel struct {
 	serverAddr    string
 	proxyUrl      string
 	authToken     string
+	user          string
+	password      string
 	tlsConfig     *tls.Config
 	tunnelConfig  map[string]*TunnelConfiguration
 	configPath    string
@@ -74,8 +76,9 @@ func newClientModel(config *Configuration, ctl mvc.Controller) *ClientModel {
 		// proxy address
 		proxyUrl: config.HttpProxy,
 
-		// auth token
-		authToken: config.AuthToken,
+		user: config.User,
+
+		password: config.Password,
 
 		// connection status
 		connStatus: mvc.ConnConnecting,
@@ -259,9 +262,10 @@ func (c *ClientModel) control() {
 		ClientId:  c.id,
 		OS:        runtime.GOOS,
 		Arch:      runtime.GOARCH,
-		Version:   version.Proto,
+		Version:   version.Full(),
 		MmVersion: version.MajorMinor(),
-		User:      c.authToken,
+		User:      c.user,
+		Password:  c.password,
 	}
 
 	if err = msg.WriteMsg(ctlConn, auth); err != nil {
@@ -284,9 +288,6 @@ func (c *ClientModel) control() {
 	c.serverVersion = authResp.MmVersion
 	c.Info("Authenticated with server, client id: %v", c.id)
 	c.update()
-	//if err = SaveAuthToken(c.configPath, c.authToken); err != nil {
-	//	c.Error("Failed to save auth token: %v", err)
-	//}
 
 	// request tunnels
 	reqIdToTunnelConfig := make(map[string]*TunnelConfiguration)

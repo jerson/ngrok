@@ -2,8 +2,6 @@ package client
 
 import (
 	"fmt"
-	"github.com/phayes/freeport"
-	"gopkg.in/yaml.v1"
 	"io/ioutil"
 	"net"
 	"net/url"
@@ -14,6 +12,9 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/phayes/freeport"
+	"gopkg.in/yaml.v1"
 )
 
 type Configuration struct {
@@ -21,11 +22,12 @@ type Configuration struct {
 	ServerAddr         string                          `yaml:"server_addr,omitempty"`
 	InspectAddr        string                          `yaml:"inspect_addr,omitempty"`
 	TrustHostRootCerts bool                            `yaml:"trust_host_root_certs,omitempty"`
-	AuthToken          string                          `yaml:"auth_token,omitempty"`
 	Tunnels            map[string]*TunnelConfiguration `yaml:"tunnels,omitempty"`
 	TLS                bool                            `yaml:"tls,omitempty"`
 	TLSClientCrt       string                          `yaml:"tls_client_crt,omitempty"`
 	TLSClientKey       string                          `yaml:"tls_client_key,omitempty"`
+	User               string                          `yaml:"user,omitempty"`
+	Password           string                          `yaml:"password,omitempty"`
 	LogTo              string                          `yaml:"-"`
 	Path               string                          `yaml:"-"`
 }
@@ -68,11 +70,19 @@ func LoadConfiguration(opts *Options) (config *Configuration, err error) {
 	if matched, err = regexp.MatchString("^[0-9a-zA-Z_\\-!]+$", content); err != nil {
 		return
 	} else if matched {
-		config = &Configuration{AuthToken: content}
+		config = &Configuration{}
 	}
 
 	if opts.tls {
 		config.TLS = opts.tls
+	}
+
+	if opts.auth != "" && strings.Contains(opts.auth, ":") {
+		split := strings.Split(opts.auth, ":")
+		if len(split) == 2 {
+			config.User = split[0]
+			config.Password = split[1]
+		}
 	}
 
 	// set configuration defaults
@@ -162,9 +172,6 @@ func LoadConfiguration(opts *Options) (config *Configuration, err error) {
 	// override configuration with command-line options
 	config.LogTo = opts.logto
 	config.Path = configPath
-	if opts.authtoken != "" {
-		config.AuthToken = opts.authtoken
-	}
 
 	switch opts.command {
 	// start a single tunnel, the default, simple pgrok behavior
@@ -299,36 +306,5 @@ func validateProtocol(proto, propName string) (err error) {
 		err = fmt.Errorf("Invalid protocol for %s: %s", propName, proto)
 	}
 
-	return
-}
-
-func SaveAuthToken(configPath, authtoken string) (err error) {
-	// empty configuration by default for the case that we can't read it
-	c := new(Configuration)
-
-	// read the configuration
-	oldConfigBytes, err := ioutil.ReadFile(configPath)
-	if err == nil {
-		// unmarshal if we successfully read the configuration file
-		if err = yaml.Unmarshal(oldConfigBytes, c); err != nil {
-			return
-		}
-	}
-
-	// no need to save, the authtoken is already the correct value
-	if c.AuthToken == authtoken {
-		return
-	}
-
-	// update auth token
-	c.AuthToken = authtoken
-
-	// rewrite configuration
-	newConfigBytes, err := yaml.Marshal(c)
-	if err != nil {
-		return
-	}
-
-	err = ioutil.WriteFile(configPath, newConfigBytes, 0600)
 	return
 }

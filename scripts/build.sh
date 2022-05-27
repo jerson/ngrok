@@ -51,7 +51,12 @@ if [ "$target_arch" == "arm" ]; then
     export GOARM="$target_arch_variant"
 fi
 
-prefix="pgrok"
+if [ "$TARGET_TYPE" == "server" ]; then
+    prefix="pgrokd"
+else
+    prefix="pgrok"
+fi
+
 binary_name="$prefix-$target_os-$target_arch"
 if [ -n "$target_arch_variant" ]; then
     binary_name="$prefix-$target_os-${target_arch}v${target_arch_variant}"

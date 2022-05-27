@@ -39,7 +39,7 @@ type Options struct {
 	config        string
 	logto         string
 	loglevel      string
-	authtoken     string
+	auth          string
 	httpauth      string
 	hostname      string
 	protocol      string
@@ -76,10 +76,10 @@ func ParseArgs() (opts *Options, err error) {
 		"DEBUG",
 		"The level of messages to log. One of: DEBUG, INFO, WARNING, ERROR")
 
-	authtoken := flag.String(
-		"authtoken",
+	auth := flag.String(
+		"auth",
 		"",
-		"Authentication token for identifying an pgrok account")
+		"username:password combination to authenticate with the pgrok server")
 
 	httpauth := flag.String(
 		"httpauth",
@@ -138,9 +138,9 @@ func ParseArgs() (opts *Options, err error) {
 		logto:         *logto,
 		loglevel:      *loglevel,
 		httpauth:      *httpauth,
+		auth:          *auth,
 		subdomain:     *subdomain,
 		protocol:      *protocol,
-		authtoken:     *authtoken,
 		hostname:      *hostname,
 		serveraddr:    *serveraddr,
 		inspectaddr:   *inspectaddr,

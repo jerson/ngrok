@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"pgrok/conn"
@@ -82,10 +83,18 @@ func NewControl(ctlConn conn.Conn, authMsg *msg.Auth) {
 		ctlConn.Close()
 	}
 
-	if opts.authToken != "" && authMsg.User != opts.authToken {
-		failAuth(fmt.Errorf("Unauthorized, token is invalid"))
+	args := []interface{}{Dict{"device_key": authMsg.User, "device_secret": authMsg.Password}}
+	res, err := wampSession.Call(context.Background(), AuthenticateDeviceSecret, args, nil, nil, nil)
+	if err != nil {
+		failAuth(err)
 		return
 	}
+
+	fmt.Printf("%+v\n", res.Arguments)
+	// if opts.authToken != "" && authMsg.User != opts.authToken {
+	// 	failAuth(fmt.Errorf("Unauthorized, token is invalid"))
+	// 	return
+	// }
 
 	// register the clientid
 	c.id = authMsg.ClientId
@@ -101,11 +110,6 @@ func NewControl(ctlConn conn.Conn, authMsg *msg.Auth) {
 	ctlConn.SetType("ctl")
 	ctlConn.AddLogPrefix(c.id)
 
-	if authMsg.Version != version.Proto {
-		failAuth(fmt.Errorf("Incompatible versions. Server %s, client %s. Download a new version at https://github.com/jerson/pgrok", version.MajorMinor(), authMsg.Version))
-		return
-	}
-
 	// register the control
 	if replaced := controlRegistry.Add(c.id, c); replaced != nil {
 		replaced.shutdown.WaitComplete()
@@ -116,7 +120,7 @@ func NewControl(ctlConn conn.Conn, authMsg *msg.Auth) {
 
 	// Respond to authentication
 	c.out <- &msg.AuthResp{
-		Version:   version.Proto,
+		Version:   version.Full(),
 		MmVersion: version.MajorMinor(),
 		ClientId:  c.id,
 	}

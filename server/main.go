@@ -21,6 +21,7 @@ const (
 var (
 	tunnelRegistry  *TunnelRegistry
 	controlRegistry *ControlRegistry
+	wampSession     *WampSession
 
 	// XXX: kill these global variables - they're only used in tunnel.go for constructing forwarding URLs
 	opts      *Options
@@ -111,6 +112,11 @@ func Main() {
 		panic(err)
 	}
 	rand.Seed(seed)
+
+	wampSession, err = NewWamp()
+	if err != nil {
+		panic(err)
+	}
 
 	// init tunnel/control registry
 	registryCacheFile := os.Getenv("REGISTRY_CACHE_FILE")

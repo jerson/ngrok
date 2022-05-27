@@ -1,10 +1,11 @@
 module pgrok
 
-go 1.12
+go 1.16
 
 require (
 	github.com/alecthomas/log4go v0.0.0-20180109082532-d146e6b86faa
-	github.com/gorilla/websocket v1.4.1
+	github.com/gammazero/nexus/v3 v3.0.4
+	github.com/gorilla/websocket v1.4.2
 	github.com/inconshreveable/go-vhost v0.0.0-20160627193104-06d84117953b
 	github.com/inconshreveable/mousetrap v1.0.0
 	github.com/jteeuwen/go-bindata v3.0.7+incompatible // indirect
