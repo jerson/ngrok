@@ -1,7 +1,7 @@
 #!/bin/bash
 
 array=($(ls build))
-VERSION=`cat $HOME/git/pgrok/version.txt`
+VERSION=`cat $HOME/git/pgrok/version/version.txt`
 
 for element in "${array[@]}"; do
     OS=$(echo "$element" | cut -d "-" -f 2)

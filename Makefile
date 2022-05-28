@@ -31,7 +31,7 @@ publish:
 	scripts/publish.sh
 
 publish-version:
-	gsutil cp "version.txt" gs://pgrok
+	gsutil cp "version/version.txt" gs://pgrok
 	gsutil setmeta -r -h "Cache-control:public, max-age=0" gs://pgrok/version.txt
 
 go-bindata:
