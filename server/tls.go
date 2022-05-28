@@ -34,7 +34,14 @@ func LoadTLSConfig(crtPath, keyPath string) (tlsConfig *tls.Config, err error) {
 			path = default_path
 		}
 
-		return loadFn(path)
+		bytes, err := loadFn(path)
+		if err != nil {
+			loadFn = assets.Asset
+			path = default_path
+			return loadFn(path)
+		}
+
+		return bytes, nil
 	}
 
 	var (
