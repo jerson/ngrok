@@ -9,12 +9,12 @@ build-all-client: clean
 build-all-server: clean
 	docker build . -t pgrok-builder
 	docker run -e SOURCE_DIR='cmd/pgrokd' -e TARGET_TYPE='server' --name pgrok_builder -v ${PWD}/build:/app/pgrok/build pgrok-builder
+	mv build/pgrokd-linux-amd64 release/pgrokd
 
 prod_context:
 	kubectl config use-context gke_record-1283_europe-west1-b_recordbase
 
 prod_docker: prod_context
-	cp build/pgrokd-linux-amd64 release/pgrokd
 	docker build -t eu.gcr.io/record-1283/reswarm-app-tunnel:v1.0.0 release
 	docker tag eu.gcr.io/record-1283/reswarm-app-tunnel:v1.0.0 eu.gcr.io/record-1283/reacct-db:latest
 	docker tag eu.gcr.io/record-1283/reswarm-app-tunnel:v1.0.0 eu.gcr.io/record-1283/reacct-db:test
