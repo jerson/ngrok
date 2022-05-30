@@ -30,6 +30,7 @@ func parseArgs() *Options {
 	loglevel := flag.String("log-level", "DEBUG", "The level of messages to log. One of: DEBUG, INFO, WARNING, ERROR")
 	flag.Parse()
 
+	//
 	return &Options{
 		httpAddr:          *httpAddr,
 		httpsAddr:         *httpsAddr,
